@@ -148,3 +148,7 @@ startBtn.addEventListener('click', () => {//Խաղի սկիզբը կոճակի �
       }
     }, 2000);
   });   
+
+  btnAnswers.forEach((btnAnswers)=>{
+    
+  })
