@@ -5,7 +5,7 @@ let mainGame = document.querySelector('.game-block'),
   startBtn = document.querySelector('.start-btn'),
   endBtn = document.querySelector('.end-btn'),
   btnAnswers = document.querySelectorAll('.answer'),
-  blockQuestion = document.querySelectorAll('.question'),
+  blocksQuestion = document.querySelectorAll('.question'),
   helpBtns = document.querySelectorAll('.hints-help'),
   winBlock = document.querySelectorAll('.wins-block'),
   helpFifty = document.querySelector('.fifty-fifty'),
@@ -140,7 +140,7 @@ startBtn.addEventListener('click', () => {//Խաղի սկիզբը կոճակի �
   //
   setTimeout(() => {
     questionSong.loop = true
-    questionSong.play()
+    questionSong.play();
     for (let i = 0; i < btnAnswers.length; i++) {
       btnAnswers[i].addEventListener('click', () => {
         questionSong.pause()
@@ -401,4 +401,175 @@ function getStartBlockWins (){
       for (let i = 0 ; i < winBlock.length;i++){
          winBlock[i].classList.remove('wins-active','animate__animated','animate__pulse','win-guaranteed','animate__tada', 'animate__heartBeat')
       }
+}
+
+
+function getStartBlocksHelp() {
+  for (let i = 0; i < helpBtns.length; i++) {
+    helpBtns[i].classList.remove('block-event', 'hints-help_spent');
+  }
+  aiExplainBlock.classList.remove('show');
+  aiExplainText.innerText = '';
+}
+
+
+function correctnessAnswer(numberQuestion, userAnswer, blockAnswer, blockQuestionParentElement){
+  const correctSound = new Audio('./music/correct-sound.mp3');
+  const incorrectSound = new Audio('./music/incorrect-sound.mp3');
+
+  function playCorrectSound(){
+    correctSound.play()
+  }
+
+  function playIncorrectSound(){
+    incorrectSoundFlag = true
+    fixed1.pause()
+    incorrectSound.play()
+  }
+
+  if (answer === userAnswer){
+    setTimeout(()=>{
+      blockAnswer.classList.add('green-bg')
+    }, 500);
+    playCorrectSound();
+    if (numberQuestion ==='question_extra'){
+      setTimeout(()=>{
+        extraQuestion.classList.remove('question-extra');
+        extraQuestion.classList.remove('question-active');
+      }, 500);
+    }
+  }else{
+    setTimeout(()=>{
+      blockAnswer.classList.add('error-answer')
+      setTimeout(()=>{
+        let blockAnswer = getStartBlockAnswers(blockQuestionParentElement.children, numberQuestion,)
+        blockAnswer.classList.add('green-bg')
+      }, 1000);
+    }, 500);
+
+    playIncorrectSound();
+    setTimeout(() => {
+        getRemoveClassName();
+    }, 3500);
+    setTimeout(() => {
+        mainGame.classList.remove('animate__backInUp')
+        gameWrapper.classList.remove('animate__flipInX')
+        mainGame.classList.add('animate__animated', 'animate__backOutUp')
+        setTimeout(() => {
+            mainGame.style.display = 'none'
+            startBtn.style.display = 'block'
+            startBtn.classList.remove('animate__backoutUp')
+            startBtn.classList.add('animate__backInDown')
+        }, 1000);
+
+        setTimeout(() => {
+            startBtn.classList.remove('animate__backInDown')
+            game.style.backgroundImage = "";
+        }, 2000);
+        let userWin = document.querySelector('.user-win');
+        if (userWin) {
+            userWin.remove();
+        }
+
+        getStartGame();
+
+
+    }, 4500);
+
+    return;
+}
+
+setTimeout(() => {
+    getBlockQuestion()
+}, 2000);
+
+ 
+  }
+
+  changeQuestion.addEventListener('click',  function changeQuestion(){
+    let blockActiveQuestion = getActiveBlockQuestion();
+    blockActiveQuestion.remove()
+extraQuestion.classList.add('question-active')
+changeQuestion.classList.add('hints-help_spent', 'block-event')
+  });
+
+  function getRemoveClassName() {
+    for (let i = 0; i < blockQuestion.length; i++) {
+        blockQuestion[i].classList.contains('question-active');
+        blockQuestion[i].classList.add('animate__animated', 'animate__fadeOut');
+        getBlockBefore(blockQuestion[i]);
+    }
+  }
+
+  function getBlockBefore(block){
+    block.insertAdjacentHTML('beforebegin', `<div class="user-win animate__animated animate__fadeIn"><p>Ձեր հաղթանակը</p><p>"${getGarantWin()}"</p></div>`)
+  }
+
+  function getGarantWin(){
+    for (let i = 0; i < winBlock.length; i++){
+      if (winBlock[i].classList.contains('win-guaranteed')){
+        let getUserWin = winBlock[i].innerText.trim();
+        for(let symbol of getUserWin){
+          if (symbol === "."){
+            symbol = ""
+            continue;
+          }
+          getUserWin +=symbol
+        }
+        return getUserWin + 'Դրամ';
+      }
+    }
+    return 0
+  }
+
+  function getBlockAnswer(blockChildrenElem, numberQuestion) {
+    //Ուսումնասիրում է բոլոր պատասխանները
+    for (let i = 0; i < blockChildrenElem.length; i++) {
+      //ստուգում է եթե տվյալ տեքստը համապատասխանում է answers-ի numberQuestion-րդին,
+      // որպես ճիշտ պատասխան պահպանումէ տվյալ պատասխանը
+      if (blockChildrenElem[i].innerText === answers[numberQuestion]) {
+        return blockChildrenElem[i];
+      }
+    }
+  }
+
+  // ֆունկցիան նախատեսված է հայտնվող հարցի բլոկը թաքցնելու և նոր հարցի բլոկը ցույց տալու համար։
+function getBlockQuestion() {
+  for (let i = 0; i <= blocksQuestion.length; i++) {
+
+    if (i === blocksQuestion.length - 1) {//Եթե i-ն հասել է վերջին հարցի բլոկին,
+      // ապա կանչվում է getWinBlock(i + 1) որը,ցույց կտա հաղթանակի բլոկը։
+      getWinBlock(i + 1);
+      return;
+    }
+    if (blocksQuestion[i].classList.contains('question-active')) {
+      blocksQuestion[i].classList.add('animate__fadeOut');//ավելանում է հետևյալ անունով կլասը
+      blocksQuestion[i].classList.remove('question-active', 'animate__animated', 'animate__pulse');//հեռացվում է կլասը
+
+      setTimeout(() => {
+        blocksQuestion[++i].classList.add('question-active', 'animate__animated', 'animate__pulse');
+        getWinBlock(i);
+      }, 200);
+      return;
+    }
+  }
+}
+
+const answers = {
+  question_1: "Բ. Կանաչ",
+  question_2: "Գ. Ընձառյուծ",
+  question_3: "Ա․ Պինոկիո",
+  question_4: "Գ․ Դրամ",
+  question_5: "Բ․ 3",
+  question_6: "Գ. Հարավային Ամերիկա",
+  question_7: "Գ․ Թթվածին",
+  question_8: "Ա․ «Սասնա ծռեր»",
+  question_9: "Դ․ Վատիկան",
+  question_10: "Գ․ Խաղաղ",
+  question_11:"Գ․ 451թ.",
+  question_12: "Բ․ Թոմաս Էդիսոն",
+  question_13: "Գ․ 116",
+  question_14: "Բ․ Սնկերի",
+  question_15: "Օխոս դել Սալադո",
+  question_extra: "Բ. Նեպալ",
 }
